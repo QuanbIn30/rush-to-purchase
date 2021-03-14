@@ -34,10 +34,10 @@
             <property name="enableSubPackages" value="true" />
         </javaClientGenerator>
 
-        <table tableName="user_info" domainObjectName="UserDO" enableCountExample="false"
+        <table tableName="user_info" domainObjectName="UserDO" enableCountByExample="false"
         enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"
         selectByExampleQueryId="false"></table>
-        <table tableName="user_password" domainObjectName="UserPassword"  enableCountExample="false"
+        <table tableName="user_password" domainObjectName="UserPassword"  enableCountByExample="false"
                enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"
                selectByExampleQueryId="false"></table>
 
