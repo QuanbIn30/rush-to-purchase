@@ -1,7 +1,5 @@
 package com.mhlevel;
 
-import com.mhlevel.dao.UserDOMapper;
-import com.mhlevel.dataobject.UserDO;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
