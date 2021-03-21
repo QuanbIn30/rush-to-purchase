@@ -1,5 +1,7 @@
 package com.mhlevel;
 
+import com.mhlevel.dao.UserInfoMapper;
+import com.mhlevel.dataobject.UserInfo;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -17,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class App {
 
     @Autowired
-    private UserDOMapper userDOMapper;
+    private UserInfoMapper userInfoMapper;
 
     public static void main( String[] args )
     {
@@ -27,11 +29,11 @@ public class App {
 
     @GetMapping("/hello")
     public String hello(){
-        UserDO userDO = userDOMapper.selectByPrimaryKey("1");
+        UserInfo userDO = userInfoMapper.selectByPrimaryKey(1);
         if(userDO == null){
             return "user does not exists";
         }else{
-            return userDO.getUsername();
+            return userDO.getName();
         }
     }
 }
