@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Random;
+
 /**
  * @author quanbin
  * @date 2021-03-21
@@ -20,6 +23,9 @@ public class UserController extends BaseController{
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private HttpServletRequest httpServletRequest;
 
     @RequestMapping("/get")
     @ResponseBody
@@ -44,5 +50,22 @@ public class UserController extends BaseController{
         UserVO userVO  = new UserVO();
         BeanUtils.copyProperties(userModel, userVO);
         return userVO;
+    }
+
+    //用户获取OTP短信接口
+    @RequestMapping("/getotp")
+    @ResponseBody
+    public CommonReturnType getOtp(@RequestParam(name = "telphone") String telphone){
+        //1.需要按照一定的规则生成otp验证码
+        Random random = new Random();
+        int randomId = random.nextInt(99999);
+        randomId += 10000;
+        String otpCode = String.valueOf(randomId);
+        //2.将otp验证码同对应用户的手机号关联起来，使用httpSession
+        httpServletRequest.getSession().setAttribute(telphone, otpCode);
+
+        //3.将otp验证码通过短信通道发送给用户（此处省略）
+        System.out.println(" telphone : " + telphone + " otpCode : " + otpCode);
+        return CommonReturnType.create(null);
     }
 }
