@@ -7,7 +7,6 @@ import com.mhlevel.error.EmBusinessError;
 import com.mhlevel.response.CommonReturnType;
 import com.mhlevel.service.Model.UserModel;
 import com.mhlevel.service.UserService;
-import org.apache.tomcat.util.security.MD5Encoder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -35,6 +34,12 @@ public class UserController extends BaseController{
     @Autowired
     private HttpServletRequest httpServletRequest;
 
+    /**
+     * 获取短信验证码接口
+     * @param id
+     * @return
+     * @throws BusinessException
+     */
     @RequestMapping("/get")
     @ResponseBody
     public CommonReturnType getUser(@RequestParam(name = "id") Integer id) throws BusinessException{
@@ -51,16 +56,13 @@ public class UserController extends BaseController{
         return CommonReturnType.create(userVO);
     }
 
-    private UserVO convertFromMode(UserModel userModel){
-        if(userModel == null) {
-            return null;
-        }
-        UserVO userVO  = new UserVO();
-        BeanUtils.copyProperties(userModel, userVO);
-        return userVO;
-    }
 
-    //用户获取OTP短信接口
+
+    /**
+     * 用户获取OTP短信接口
+     * @param telphone
+     * @return
+     */
     @RequestMapping(value="/getotp", method={RequestMethod.POST}, consumes = {CONTENT_TYPE_FORMED})
     @ResponseBody
     public CommonReturnType getOtp(@RequestParam(name = "telphone") String telphone){
@@ -77,7 +79,19 @@ public class UserController extends BaseController{
         return CommonReturnType.create(null);
     }
 
-    //用户注册接口
+    /**
+     * 用户注册接口
+     * @param telphone
+     * @param otpCode
+     * @param name
+     * @param gender
+     * @param age
+     * @param password
+     * @return
+     * @throws BusinessException
+     * @throws UnsupportedEncodingException
+     * @throws NoSuchAlgorithmException
+     */
     @RequestMapping(value="/register", method = {RequestMethod.POST}, consumes = {CONTENT_TYPE_FORMED})
     @ResponseBody
     public CommonReturnType register(@RequestParam(name = "telphone") String telphone,
@@ -88,6 +102,7 @@ public class UserController extends BaseController{
                                      @RequestParam(name = "password") String password) throws BusinessException, UnsupportedEncodingException, NoSuchAlgorithmException {
 
         //1.验证手机号和对应的otpCode相符合
+        //TODO 怎么解决跨域问题呢
 //        String inSessionOtpCode = (String)this.httpServletRequest.getSession().getAttribute("telphone");
         String inSessionOtpCode = this.httpServletRequest.getParameter("otpCode");
         if(!StringUtils.equals(otpCode, inSessionOtpCode)){
@@ -104,6 +119,55 @@ public class UserController extends BaseController{
         return CommonReturnType.create(null);
     }
 
+    /**
+     * 用户登入接口
+     * @param telphone
+     * @param password
+     * @return
+     */
+    @RequestMapping(value="/login", method = {RequestMethod.POST}, consumes = {CONTENT_TYPE_FORMED})
+    @ResponseBody
+    public CommonReturnType login(@RequestParam(name="telphone") String telphone,
+                                  @RequestParam(name="password") String password) throws BusinessException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        //1.入参校验
+        if (org.apache.commons.lang3.StringUtils.isEmpty(telphone)
+            || org.apache.commons.lang3.StringUtils.isEmpty(password)){
+            throw new BusinessException(EmBusinessError.PARAMETER_ERROR);
+        }
+
+        //2.调用用户登入服务
+        UserModel userModel = userService.login(telphone, this.EnCodeByMd5(password));
+
+        //3.将登入凭证加入到用户登入成功的session内
+        this.httpServletRequest.getSession().setAttribute("IS_LOGIN", true);
+        this.httpServletRequest.getSession().setAttribute("LOGIN_USER", userModel);
+
+        return CommonReturnType.create(null);
+    }
+
+
+
+    /**
+     * 对象转换
+     * @param userModel
+     * @return
+     */
+    private UserVO convertFromMode(UserModel userModel){
+        if(userModel == null) {
+            return null;
+        }
+        UserVO userVO  = new UserVO();
+        BeanUtils.copyProperties(userModel, userVO);
+        return userVO;
+    }
+
+    /**
+     * 将密码转码
+     * @param str
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws UnsupportedEncodingException
+     */
     public String EnCodeByMd5(String str) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         //确定计算方法
         MessageDigest md5 = MessageDigest.getInstance("MD5");

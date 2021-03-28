@@ -14,6 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sun.misc.BASE64Encoder;
+
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * @author quanbin
@@ -65,6 +70,30 @@ public class UserServiceImpl implements UserService {
         return;
     }
 
+    /**
+     *
+     * @param telphone 是用户的手机号码
+     * @param password 是加密后的密码
+     * @throws BusinessException
+     * @throws UnsupportedEncodingException
+     * @throws NoSuchAlgorithmException
+     */
+    @Override
+    public UserModel login(String telphone, String password) throws BusinessException, UnsupportedEncodingException, NoSuchAlgorithmException {
+
+        //通过用户的手机号码获取用户信息
+        UserInfo userInfo = userInfoMapper.selectByTelphone(telphone);
+        if (userInfo == null){
+            throw new BusinessException(EmBusinessError.USER_LOGIN_FAIL);
+        }
+        UserPassword userPassword = userPasswordMapper.selectByUserId(userInfo.getId());
+        UserModel userModel = convertFromDataObject(userInfo, userPassword);
+        if (StringUtils.equals(password, userModel.getEncrptPassword())){
+            throw new BusinessException(EmBusinessError.USER_LOGIN_FAIL);
+        }
+        return userModel;
+    }
+
     private static UserModel convertFromDataObject(UserInfo userInfo, UserPassword userPassword){
         UserModel userModel = new UserModel();
         if(userInfo == null){
@@ -102,4 +131,5 @@ public class UserServiceImpl implements UserService {
         userPassword.setUserId(userModel.getId());
         return userPassword;
     }
+
 }

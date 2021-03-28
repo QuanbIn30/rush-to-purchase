@@ -50,4 +50,8 @@ public interface UserInfoMapper {
      * @mbggenerated Sun Mar 21 17:23:53 CST 2021
      */
     int updateByPrimaryKey(UserInfo record);
+
+    String selectUserInfoByTelphone(String telphone);
+
+    UserInfo selectByTelphone(String telphone);
 }

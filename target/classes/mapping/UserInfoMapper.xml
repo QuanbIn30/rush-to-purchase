@@ -154,4 +154,17 @@
       third_party_id = #{thirdPartyId,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
+
+  <select id="selectUserInfoByTelphone" resultType="String" parameterType="String">
+    select b.encrpt_password
+    from user_info a left join user_password b on a.id = b.user_id
+    where a.telphone = #{telphone};
+  </select>
+
+  <select id="selectByTelphone" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from user_info
+    where telphone = #{telphone,jdbcType=VARCHAR}
+  </select>
 </mapper>
