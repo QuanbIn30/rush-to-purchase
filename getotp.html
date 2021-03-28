@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Getotp</title>
+	<meta charset="UTF-8">
+	<script src="https://code.jquery.com/jquery-1.11.0.min.js" integrity="sha256-spTpc4lvj4dOkKjrGokIrHkJgNA0xMS98Pw9N7ir9oI=" crossorigin="anonymous" type="text/javascript"></script>
+</head>
+<body>
+	<div>
+		<h3>获取otp信息</h3>
+		<div>
+			<label>手机号</label>
+			<div>
+				<input type="text" placeholder="手机号" name="telphone" id="telphone" />
+			</div>
+		</div>
+		<div>
+			<button id="getotp" type="submit">
+				获取otp短信
+			</button>
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+	jQuery(document).ready(function(){
+
+		//绑定otp的click事件用于向后段发送获取手机验证码的请求
+		$("#getotp").on("click", function(){
+			var telphone = $("#telphone").val();
+			if(telphone == null || telphone == ""){
+				alert("手机号不能为空");
+				return false;
+			}
+			$.ajax({
+				type:"POST",
+				contentType:"application/x-www-form-urlencoded",
+				url:"http://localhost:8090/user/getotp",
+				data:{
+					"telphone":$("#telphone").val()
+				},
+				success:function(data){
+					if(data.status == "success"){
+						alert("otp已经发送到您的手机上，请注意查收");
+					}else{
+						alert("otp发送失败，原因为" + data.data.errMsg);
+					}
+				},
+				error:function(data){
+					alert("otp发送失败，原因为" + data.responseText);
+				}
+			});
+		});
+		return false;
+	});
+	
+</script>
+</html>

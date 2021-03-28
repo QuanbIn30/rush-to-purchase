@@ -19,6 +19,7 @@ import java.util.Random;
  */
 @Controller
 @RequestMapping("/user")
+@CrossOrigin
 public class UserController extends BaseController{
 
     @Autowired
@@ -53,7 +54,7 @@ public class UserController extends BaseController{
     }
 
     //用户获取OTP短信接口
-    @RequestMapping("/getotp")
+    @RequestMapping(value="/getotp", method={RequestMethod.POST}, consumes = {CONTENT_TYPE_FORMED})
     @ResponseBody
     public CommonReturnType getOtp(@RequestParam(name = "telphone") String telphone){
         //1.需要按照一定的规则生成otp验证码
