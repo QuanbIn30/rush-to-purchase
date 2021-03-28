@@ -4,11 +4,16 @@ import com.mhlevel.dao.UserInfoMapper;
 import com.mhlevel.dao.UserPasswordMapper;
 import com.mhlevel.dataobject.UserInfo;
 import com.mhlevel.dataobject.UserPassword;
+import com.mhlevel.error.BusinessException;
+import com.mhlevel.error.EmBusinessError;
 import com.mhlevel.service.Model.UserModel;
 import com.mhlevel.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author quanbin
@@ -35,6 +40,31 @@ public class UserServiceImpl implements UserService {
         return userModel;
     }
 
+    @Override
+    @Transactional
+    public void register(UserModel userModel) throws BusinessException {
+        if(userModel == null){
+            throw new BusinessException(EmBusinessError.PARAMETER_ERROR);
+        }
+        if (StringUtils.isEmpty(userModel.getName())
+            || userModel.getAge() == null
+            || userModel.getGender() == null
+            || StringUtils.isEmpty(userModel.getTelphone())){
+            throw new BusinessException(EmBusinessError.PARAMETER_ERROR);
+        }
+        //实现model -> dataObject
+        UserInfo userInfo = ConvertUserModelToUserInfo(userModel);
+        try{
+            userInfoMapper.insertSelective(userInfo);
+        }catch (DuplicateKeyException ex){
+            throw new BusinessException(EmBusinessError.PARAMETER_ERROR, "手机号已经存在");
+        }
+        userModel.setId(userInfo.getId());
+        UserPassword userPassword = ConvertUserModeToPassword(userModel);
+        userPasswordMapper.insertSelective(userPassword);
+        return;
+    }
+
     private static UserModel convertFromDataObject(UserInfo userInfo, UserPassword userPassword){
         UserModel userModel = new UserModel();
         if(userInfo == null){
@@ -52,5 +82,24 @@ public class UserServiceImpl implements UserService {
             userModel.setEncrptPassword(userPassword.getEncrptPassword());
         }
         return userModel;
+    }
+
+    private static UserInfo ConvertUserModelToUserInfo(UserModel userModel){
+        if (userModel == null){
+            return null;
+        }
+        UserInfo userInfo = new UserInfo();
+        BeanUtils.copyProperties(userModel, userInfo);
+        return userInfo;
+    }
+
+    private static UserPassword ConvertUserModeToPassword(UserModel userModel){
+        if (userModel == null){
+            return null;
+        }
+        UserPassword userPassword = new UserPassword();
+        userPassword.setEncrptPassword(userModel.getEncrptPassword());
+        userPassword.setUserId(userModel.getId());
+        return userPassword;
     }
 }

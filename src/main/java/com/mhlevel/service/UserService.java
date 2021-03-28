@@ -1,5 +1,6 @@
 package com.mhlevel.service;
 
+import com.mhlevel.error.BusinessException;
 import com.mhlevel.service.Model.UserModel;
 
 /**
@@ -9,4 +10,6 @@ import com.mhlevel.service.Model.UserModel;
 public interface UserService {
 
     UserModel getUserById(Integer id);
+
+    void register(UserModel userModel) throws BusinessException;
 }
