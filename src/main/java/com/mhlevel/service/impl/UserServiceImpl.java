@@ -8,6 +8,8 @@ import com.mhlevel.error.BusinessException;
 import com.mhlevel.error.EmBusinessError;
 import com.mhlevel.service.Model.UserModel;
 import com.mhlevel.service.UserService;
+import com.mhlevel.validator.ValidationResult;
+import com.mhlevel.validator.ValidatorImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserPasswordMapper userPasswordMapper;
+
+    @Autowired
+    private ValidatorImpl validator;
     
     @Override
     public UserModel getUserById(Integer id){
@@ -51,11 +56,15 @@ public class UserServiceImpl implements UserService {
         if(userModel == null){
             throw new BusinessException(EmBusinessError.PARAMETER_ERROR);
         }
-        if (StringUtils.isEmpty(userModel.getName())
-            || userModel.getAge() == null
-            || userModel.getGender() == null
-            || StringUtils.isEmpty(userModel.getTelphone())){
-            throw new BusinessException(EmBusinessError.PARAMETER_ERROR);
+//        if (StringUtils.isEmpty(userModel.getName())
+//            || userModel.getAge() == null
+//            || userModel.getGender() == null
+//            || StringUtils.isEmpty(userModel.getTelphone())){
+//            throw new BusinessException(EmBusinessError.PARAMETER_ERROR);
+//        }
+        ValidationResult result = validator.validate(userModel);
+        if (result.isHasErrors()){
+            throw new BusinessException(EmBusinessError.PARAMETER_ERROR, result.getErrMsg());
         }
         //实现model -> dataObject
         UserInfo userInfo = ConvertUserModelToUserInfo(userModel);
